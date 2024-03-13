@@ -17,29 +17,34 @@ class _LoginPageState extends State<LoginPage> {
   String? uname;
   String? password;
   String? jwt;
+  String? tid;
   bool logging = false;
 
   Future<bool> authenticateUser(String username, String password) async {
+    print(username);
+    print(password);
     final response = await http.post(
-      Uri.parse('https://techofes-website-api.onrender.com/api/t77admin/login'),
+      Uri.parse('https://techofes-website-api.onrender.com/api/login'),
       body: jsonEncode(<String, String>{
         'email': username,
         'password': password,
       }),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
     );
 
     if (response.statusCode == 200) {
+      print(response.statusCode);
+
       // Successful authentication, parse JWT token from response
       Map<String, dynamic> jsonResponse = json.decode(response.body);
       jwt = jsonResponse['token'];
+      tid = jsonResponse['user']['t_id'];
+      print(tid);
       setState(() {
         logging = false;
       });
       return true;
     } else {
+      print(response.body);
       setState(() {
         logging = false;
       });
@@ -66,6 +71,11 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Column(
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Text(tid==null? '': 'Tid: $tid', ),
+                  ),
+
                   const Text(
                     "LogIn",
                     style: TextStyle(
@@ -100,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                       filled: true,
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0)),
-                      hintText: 'Enter the User name'),
+                      hintText: 'Email'),
                 ),
               ),
               SizedBox(height: 15),
@@ -120,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                       filled: true,
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0)),
-                      hintText: 'Enter the password'),
+                      hintText: 'Password'),
                 ),
               ),
               SizedBox(height: 25),
@@ -151,11 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                         uname = null;
                         password= null;
                         //   //NavBar(userId,password);
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => HomePage(
-                                )));
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text("LogIn successful"),
